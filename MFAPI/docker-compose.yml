@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  # MongoDB Service
+  mongodb-primary:
+    container_name: mongodb-primary
+    image: bitnami/mongodb:latest
+    environment:
+      MONGODB_ADVERTISED_HOSTNAME: mongodb-primary
+      MONGODB_USERNAME: admin
+      MONGODB_PASSWORD: pass
+      MONGODB_DATABASE: mf
+      MONGODB_ROOT_USER: admin
+      MONGODB_ROOT_PASSWORD: pass
+      MONGODB_REPLICA_SET_KEY: replicasetkey123
+      MONGODB_REPLICA_SET_NAME: rs1
+      MONGODB_REPLICA_SET_MODE: primary
+    ports:
+      - "27017:27017"
+  # Express Service
+  express:
+    container_name: express
+    build: .
+    ports:
+      - "4000:3000"
+    volumes:
+      - .:/app
+    environment:
+      PORT: 3000
+      DB_NAME: mf
+      DB_USER: admin
+      DB_PASSWORD: pass
+      DB_HOST: mongodb-primary
+      DB_PORT: 27017
+      DB_REPLICA_SET: rs1
+      FRONTEND_URL: http://localhost:5173
+      ACCESS_TOKEN_SECRET: 123
+      REFRESH_TOKEN_SECRET: 456
+      LOG_LEVEL: debug
+    depends_on:
+      - mongodb-primary
+  mailhog:
+    container_name: mailhog
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
